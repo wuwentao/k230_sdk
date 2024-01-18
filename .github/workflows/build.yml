@@ -119,9 +119,9 @@ jobs:
           mkdir -p /opt/ || exit 1
           rm -rf /opt/toolchain/
           echo "show PWD toolchain"
-          ls -alht $PWD/k230_sdk/toolchain/ || exit 1
-          echo "link ./k230_sdk/toolchain to /opt/toolchain"
-          ln -s $PWD/k230_sdk/toolchain /opt/ || exit 1
+          ls -alht $PWD/toolchain/ || exit 1
+          echo "link ./toolchain to /opt/toolchain"
+          ln -s $PWD/toolchain /opt/ || exit 1
           echo "show /opt/toolchain/"
           ls -alht /opt/toolchain/ || exit 1
           ls -alht /opt/toolchain/Xuantie-900-gcc-linux* || exit 1
@@ -136,23 +136,32 @@ jobs:
           echo "---show output---"
           ls -alht output/${CONF}/images || exit 1
 
-      - name: Save image
-        run: |
-          pwd
-          echo "upload image to release[TO BE done]"
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.cfg }}-artifacts
+          path: output/${CONF}/images/k230_*.img.gz
+          
   upload_release:
     needs: build_image
     runs-on: ubuntu-latest
     strategy:
       matrix:
         cfg: ["canmv", "evb"]
-
+    env:
+        CONF: k230_${{ matrix.cfg }}_defconfig
     steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.cfg }}-artifacts
+          path: output/${CONF}/artifacts
+
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: output/${CONF}/images/sysimage-sdcard.img  # 根据你的实际文件路径进行调整
-          asset_name: sysimage-sdcard_${{ matrix.cfg }}.img  # 自定义 release 文件名
+          files: output/${CONF}/artifacts/*
+          asset_name: sysimage-sdcard_${{ matrix.cfg }}.img.gz  # 自定义 release 文件名
           label: sysimage-sdcard_${{ matrix.cfg }}  # 自定义 release 显示信息
         env:
           GITHUB_TOKEN: ${{ secrets.CR_PAT }}
