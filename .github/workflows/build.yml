@@ -65,12 +65,13 @@ jobs:
           echo "start to tag docker image with latest tag"
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           echo "start to push docker image with ver $VERSION"
-          docker push $IMAGE_ID:$VERSION
+          # docker push $IMAGE_ID:$VERSION
           echo "start to push docker image with latest tag"
-          docker push $IMAGE_ID:latest
+          # docker push $IMAGE_ID:latest
           echo "finished to push docker image"
   build_image:
     name: Build
+    needs: build_docker
     runs-on: [ubuntu-latest]
     timeout-minutes: 180
     container:
