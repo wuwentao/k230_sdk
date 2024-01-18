@@ -114,7 +114,7 @@ jobs:
           git config --global --list
           ls -alht
           echo "download toolchain and build env"
-          time make prepare_sourcecode || exit 1
+          make prepare_sourcecode || exit 1
           ls -alht
           mkdir -p /opt/ || exit 1
           rm -rf /opt/toolchain/
@@ -132,7 +132,7 @@ jobs:
           pwd
           ls -alht
           echo "start to build k230 images"
-          time make CONF=$CONF || exit 1
+          make CONF=$CONF || exit 1
           echo "---show output---"
           ls -alht output/${CONF}/images || exit 1
 
@@ -140,3 +140,19 @@ jobs:
         run: |
           pwd
           echo "upload image to release[TO BE done]"
+  upload_release:
+    needs: build_image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cfg: ["canmv", "evb"]
+
+    steps:
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: output/${CONF}/images/sysimage-sdcard.img  # 根据你的实际文件路径进行调整
+          asset_name: sysimage-sdcard_${{ matrix.cfg }}.img  # 自定义 release 文件名
+          label: sysimage-sdcard_${{ matrix.cfg }}  # 自定义 release 显示信息
+        env:
+          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
