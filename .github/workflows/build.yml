@@ -135,9 +135,16 @@ jobs:
           make CONF=$CONF || exit 1
           echo "---show output---"
           ls -alht output/${CONF}/images || exit 1
+          pwd
 
+      - name: Debug Working Directory
+        run: |
+          pwd
+          ls -alht
+        shell: bash
+  
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.cfg }}-artifacts
           path: output/${CONF}/images/k230_*.img.gz
