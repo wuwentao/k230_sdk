@@ -141,6 +141,11 @@ jobs:
         run: |
           pwd
           ls -alht
+          ls -alht output/${CONF}/images/
+          cp output/${CONF}/images/k230_*.img.gz ./
+          ls -alht
+          ls -alht output/${CONF}/images/k230_*
+          ls -alht output/${CONF}/images/k230_${{ matrix.cfg }}*
         shell: bash
   
       - name: Archive Artifacts
