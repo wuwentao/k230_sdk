@@ -148,14 +148,15 @@ jobs:
           ls -alht output/${CONF}/images/k230_${{ matrix.cfg }}*
           # Copy compiled files to /github/workspace/artifacts
           mkdir -p /github/workspace/artifacts
-          cp output/${CONF}/images/k230_${{ matrix.cfg }}* /github/workspace/artifacts
+          cp output/${CONF}/images/k230_${{ matrix.cfg }}* /github/workspace/artifacts/
+          ls -alht /github/workspace/artifacts/
         shell: bash
   
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.cfg }}-artifacts
-          path: /github/workspace/artifacts
+          path: /github/workspace/artifacts/*
           
   upload_release:
     needs: build_image
@@ -166,11 +167,18 @@ jobs:
     env:
         CONF: k230_${{ matrix.cfg }}_defconfig
     steps:
+      - name: show Working Directory
+        run: |
+          pwd
+          ls -alht
+          ls -alht /github/workspace/artifacts/
+        shell: bash
+        
       - name: Download Artifacts
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.cfg }}-artifacts
-          path: /github/workspace/artifacts
+          path: /github/workspace/artifacts/
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
