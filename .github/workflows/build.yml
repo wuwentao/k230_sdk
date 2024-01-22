@@ -146,13 +146,16 @@ jobs:
           ls -alht
           ls -alht output/${CONF}/images/k230_*
           ls -alht output/${CONF}/images/k230_${{ matrix.cfg }}*
+          # Copy compiled files to /github/workspace/artifacts
+          mkdir -p /github/workspace/artifacts
+          cp output/${CONF}/images/k230_${{ matrix.cfg }}* /github/workspace/artifacts
         shell: bash
   
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.cfg }}-artifacts
-          path: output/${CONF}/images/k230_*.img.gz
+          path: /github/workspace/artifacts
           
   upload_release:
     needs: build_image
@@ -167,12 +170,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.cfg }}-artifacts
-          path: output/${CONF}/artifacts
+          path: /github/workspace/artifacts
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: output/${CONF}/artifacts/*
+          files: /github/workspace/artifacts/*
           asset_name: sysimage-sdcard_${{ matrix.cfg }}.img.gz  # 自定义 release 文件名
           label: sysimage-sdcard_${{ matrix.cfg }}  # 自定义 release 显示信息
         env:
