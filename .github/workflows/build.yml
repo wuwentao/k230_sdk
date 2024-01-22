@@ -161,24 +161,20 @@ jobs:
   upload_release:
     needs: build_image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        cfg: ["canmv", "evb"]
-    env:
-        CONF: k230_${{ matrix.cfg }}_defconfig
     steps:
-      - name: show Working Directory
-        run: |
-          pwd
-          ls -alht
-          ls -alht /github/workspace/artifacts/
-        shell: bash
         
       - name: Download Artifacts
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.cfg }}-artifacts
+          name: artifacts
           path: /github/workspace/artifacts/
+
+      - name: show Working Directory
+        run: |
+          pwd
+          ls -alht
+          ls -alht /github/workspace/artifacts/ || exit 0
+        shell: bash
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
