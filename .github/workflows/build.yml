@@ -155,8 +155,8 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.cfg }}-artifacts
-          path: /github/workspace/artifacts/*
+          name: artifacts-${{ matrix.cfg }}
+          path: /github/workspace/artifacts
           
   upload_release:
     needs: build_image
@@ -164,10 +164,14 @@ jobs:
     steps:
         
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: artifacts
-          path: /github/workspace/artifacts/
+          pattern: artifacts-*
+          path: /github/workspace/artifacts
+          merge-multiple: true
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: show Working Directory
         run: |
