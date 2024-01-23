@@ -2,25 +2,21 @@
 # https://github.com/marketplace/actions/build-and-push-docker-images
 
 
-#on:
+#on: 
+#  release:
+#    types: [released]
 #  push:
-#    branches: ['main']
-#    paths: ['tools/docker/**']
+#    branches:
+#      - dev
+#      - main
 #  pull_request:
-#    branches: ['main']
-#    paths: ['tools/docker/**']
+#    branches:
+#      - main
+#      - dev
 
 on: 
   release:
     types: [released]
-  push:
-    branches:
-      - dev
-      - main
-  pull_request:
-    branches:
-      - main
-      - dev
 
 env:
   REGISTRY: ghcr.io
@@ -47,7 +43,7 @@ jobs:
           docker build -f tools/docker/Dockerfile -t ${{ env.IMAGE_NAME }} tools/docker --label "runnumber=${GITHUB_RUN_ID}"
           docker run --rm ${{ env.IMAGE_NAME }}
       -
-        name: Push image
+        name: Pulish docker image
         run: |
           IMAGE_ID=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.IMAGE_NAME }}
           # Change all uppercase to lowercase
@@ -65,10 +61,11 @@ jobs:
           echo "start to tag docker image with latest tag"
           docker tag $IMAGE_NAME $IMAGE_ID:latest
           echo "start to push docker image with ver $VERSION"
-          # docker push $IMAGE_ID:$VERSION
+          #docker push $IMAGE_ID:$VERSION
           echo "start to push docker image with latest tag"
-          # docker push $IMAGE_ID:latest
+          #docker push $IMAGE_ID:latest
           echo "finished to push docker image"
+
   build_image:
     name: Build
     needs: build_docker
@@ -86,7 +83,7 @@ jobs:
       - name: Check for dockerenv
         run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
 
-      - name: Install nvm/node for actions checkout env
+      - name: Install Nvm/Node for Actions Checkout Env
         run: |
           pwd
           ls -alht
@@ -98,13 +95,14 @@ jobs:
           nvm install node || exit 1
           node --version || exit 1
 
-      - uses: actions/checkout@v4
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           clean: true
           submodules: true
 
-      - name: Download toolchain and build env
+      - name: Download Toolchain and Setup Build Env
         run: |
           hostname
           uname -a
@@ -118,7 +116,7 @@ jobs:
           ls -alht
           mkdir -p /opt/ || exit 1
           rm -rf /opt/toolchain/
-          echo "show PWD toolchain"
+          echo "show toolchain"
           ls -alht $PWD/toolchain/ || exit 1
           echo "link ./toolchain to /opt/toolchain"
           ln -s $PWD/toolchain /opt/ || exit 1
@@ -137,22 +135,18 @@ jobs:
           ls -alht output/${CONF}/images || exit 1
           pwd
 
-      - name: Debug Working Directory
+      - name: Show Output Directory For Debug Purpose
         run: |
           pwd
           ls -alht
           ls -alht output/${CONF}/images/
-          cp output/${CONF}/images/k230_*.img.gz ./
-          ls -alht
-          ls -alht output/${CONF}/images/k230_*
-          ls -alht output/${CONF}/images/k230_${{ matrix.cfg }}*
           # Copy compiled files to /github/workspace/artifacts
           mkdir -p /github/workspace/artifacts
           cp output/${CONF}/images/k230_${{ matrix.cfg }}* /github/workspace/artifacts/
           ls -alht /github/workspace/artifacts/
         shell: bash
   
-      - name: Archive Artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.cfg }}
@@ -162,17 +156,18 @@ jobs:
     needs: build_image
     runs-on: ubuntu-latest
     steps:
-        
+
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           pattern: artifacts-*
           merge-multiple: true
-      - name: Display structure of downloaded files
+
+      - name: Display Structure Of Downloaded Files
         run: ls -R
 
-      - name: show Working Directory
+      - name: Show Working Directory For Debug Purpose
         run: |
           pwd
           ls -alht
@@ -183,7 +178,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/*
-          asset_name: sysimage-sdcard_${{ matrix.cfg }}.img.gz  # 自定义 release 文件名
-          label: sysimage-sdcard_${{ matrix.cfg }}  # 自定义 release 显示信息
         env:
           GITHUB_TOKEN: ${{ secrets.CR_PAT }}
