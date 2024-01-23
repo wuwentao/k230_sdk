@@ -163,9 +163,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         
-      - name: Download Artifacts
+      - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
+          path: artifacts
           pattern: artifacts-*
           merge-multiple: true
       - name: Display structure of downloaded files
@@ -175,13 +176,13 @@ jobs:
         run: |
           pwd
           ls -alht
-          ls -alht /github/workspace/artifacts/ || exit 0
+          ls -alht artifacts || exit 0
         shell: bash
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: /github/workspace/artifacts/*
+          files: artifacts/*
           asset_name: sysimage-sdcard_${{ matrix.cfg }}.img.gz  # 自定义 release 文件名
           label: sysimage-sdcard_${{ matrix.cfg }}  # 自定义 release 显示信息
         env:
