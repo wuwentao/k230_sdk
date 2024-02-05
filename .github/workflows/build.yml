@@ -44,11 +44,11 @@ jobs:
           echo "start to tag docker image with ver $VERSION"
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           echo "start to tag docker image with latest tag"
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
+          #docker tag $IMAGE_NAME $IMAGE_ID:latest
           echo "start to push docker image with ver $VERSION"
-          docker push $IMAGE_ID:$VERSION
+          #docker push $IMAGE_ID:$VERSION
           echo "start to push docker image with latest tag"
-          docker push $IMAGE_ID:latest
+          #docker push $IMAGE_ID:latest
           echo "finished to push docker image"
 
   build_image:
